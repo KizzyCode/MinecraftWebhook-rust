@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <title>Minecraft Webhook UI</title>
+    </head>
+    <style>
+        body {
+            margin: 20;
+            width: calc(100% - 40px);
+            
+            font-family: Helvetica, Arial, sans-serif;
+        }
+
+        #webhook {
+            width: 300px;
+        }
+    </style>
+    <script>
+        /// Updates the target to reflect the webhook URL
+        function update_target() {
+            const target = document.getElementById("webhook").value;
+            document.getElementById("webhook_form").action = "/api/" + target;
+        }
+    </script>
+    <body>
+        <h1>Call Webhook:</h1>
+        <form id="webhook_form" method="post">
+            /api/<input id="webhook" type="text" oninput="update_target()"> <input type="submit" value="POST">
+        </form>
+    </body>
+</html>

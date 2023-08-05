@@ -1,0 +1,42 @@
+[package]
+name = "minecraft-webhook"
+version = "0.1.0"
+edition = "2021"
+authors = ["KizzyCode Software Labs./Keziah Biermann <development@kizzycode.de>"]
+keywords = []
+categories = []
+description = "A webhook to trigger predefined minecraft commands"
+license = "BSD-2-Clause OR MIT"
+repository = "https://github.com/KizzyCode/MinecraftWebhook-rust"
+readme = "README.md"
+
+
+[[bin]]
+name = "minecraft-webhook"
+path = "src/main.rs"
+
+
+[badges]
+appveyor = { repository = "KizzyCode/MinecraftWebhook-rust" }
+
+
+[features]
+default = []
+
+
+[dependencies]
+ehttpd = { version = "0.6.0", default-features = false }
+getrandom = { version = "0.2.10", default-features = false, features = ["std"] }
+serde = { version = "1.0.152", default-features = false, features = ["std", "derive"] }
+sha2 = { version = "0.10.7", default-features = false, features = ["std", "asm"] }
+toml = { version = "0.7.6", default-features = false, features = ["parse"] }
+
+
+[dev-dependencies]
+
+
+[profile.release]
+overflow-checks = true
+
+[profile.bench]
+overflow-checks = true
