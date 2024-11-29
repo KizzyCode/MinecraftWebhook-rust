@@ -13,9 +13,7 @@ fn lookup_any(name: &[u8], config: &Config) -> Option<&'static String> {
     static SECRET: OnceLock<[u8; 32]> = OnceLock::new();
     let secret = SECRET.get_or_init(|| {
         // Generate a random secret
-        let mut secret = [0; 32];
-        getrandom::getrandom(&mut secret).expect("failed to create blinding secret");
-        secret
+        osrandom::to_array().expect("failed to create blinding secret")
     });
 
     /// The blinded webhook table
@@ -56,7 +54,7 @@ pub fn webhook(request: &Request, config: &Config) -> Response {
         // Log invalid target and return 404
         let target_str = str::from_utf8(&request.target).unwrap_or("<non UTF-8>");
         eprintln!("Invalid webhook name: {target_str}");
-        
+
         // Return 404
         let mut response: Response = ResponseExt::new_404_notfound();
         response.set_content_length(0);

@@ -64,23 +64,20 @@ impl RconConnection {
         self.connection.read_exact(&mut size_bytes)?;
         let size @ 0..=Self::SIZE_MAX = i32::from_le_bytes(size_bytes) else {
             // Return error
-            return Err(error!("Announced RCON response is too large ({})", i32::from_le_bytes(size_bytes)))
+            return Err(error!("Announced RCON response is too large ({})", i32::from_le_bytes(size_bytes)));
         };
 
         // Prepare message buffer
-        // Note: the addition is safe since the `size` is constrained by `Self::SIZE_MAX`, which should always be lower
-        // than `usize::MAX`; at least on any reasonable machine.
-        #[allow(clippy::arithmetic_side_effects)]
+        #[allow(clippy::arithmetic_side_effects, reason = "SIZE_MAX is significantly smaller than usize::MAX")]
         let mut response = Vec::with_capacity(4 + size as usize);
         response.extend(size_bytes);
-        // Note: the addition is safe since the `size` is constrained by `Self::SIZE_MAX`, which should always be lower
-        // than `usize::MAX`; at least on any reasonable machine.
-        #[allow(clippy::arithmetic_side_effects)]
+
+        // Expand the buffer with 4 trailing `0` bytes
+        #[allow(clippy::arithmetic_side_effects, reason = "SIZE_MAX is significantly smaller than usize::MAX")]
         response.resize(4 + size as usize, 0);
 
         // Read and parse response
-        // Note: this is safe since we've pushed 4 bytes just before
-        #[allow(clippy::indexing_slicing)]
+        #[allow(clippy::indexing_slicing, reason = "Buffer has at least a size of 4 due to the resize")]
         self.connection.read_exact(&mut response[4..])?;
         let (response_id, _, payload) = Self::deserialize(&response)?;
 
@@ -95,13 +92,11 @@ impl RconConnection {
     /// Serializes a message
     fn serialize(id: i32, type_: i32, payload: &str) -> Result<Vec<u8>, Error> {
         // Encode the size
-        // Note: The addition is safe, since the payload length is never greater than `isize::MAX`
-        #[allow(clippy::arithmetic_side_effects)]
+        #[allow(clippy::arithmetic_side_effects, reason = "Payload is constrained by isize::MAX")]
         let size = i32::try_from(payload.len() + Self::META_SIZE)?;
 
         // Serialize the message
-        // Note: This is safe since payload cannot be larger than `isize::MAX`
-        #[allow(clippy::arithmetic_side_effects)]
+        #[allow(clippy::arithmetic_side_effects, reason = "Payload is constrained by isize::MAX")]
         let mut message: Vec<u8> = Vec::with_capacity(4 + Self::META_SIZE + payload.len());
         message.extend(size.to_le_bytes());
         message.extend(id.to_le_bytes());
@@ -134,10 +129,8 @@ impl RconConnection {
         let mut body = String::new();
         if body_len > 0 {
             // Decode body string
-            // Note: this is safe since the `body_len` is constrained by `i32::MAX`, which should always be lower than
-            // `usize::MAX`; at least on any reasonable machine.
-            #[allow(clippy::arithmetic_side_effects)]
-            let Some(bytes) = message.get(12 .. 12 + body_len) else {
+            #[allow(clippy::arithmetic_side_effects, reason = "Body length is constrained by i32::MAX")]
+            let Some(bytes) = message.get(12..12 + body_len) else {
                 // Log detailed error
                 return Err(error!("Truncated RCON message body (expected {}, got {})", 12 + body_len, message.len()))?;
             };
